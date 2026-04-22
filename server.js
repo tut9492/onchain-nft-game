@@ -19,7 +19,7 @@ const fs = require('fs');
 // ─── Config ─────────────────────────────────────────────────────────────────
 
 const PORT = process.env.GAME_PORT || 3001;
-const CONTRACT = '0x015061aa806b5abab9ee453e366e18a713e8ea80';
+const CONTRACT = process.env.CONTRACT_ADDRESS;
 const RPC = 'https://mainnet.megaeth.com/rpc';
 const SIGNER_KEY = process.env.SIGNER_PRIVATE_KEY;
 const ADMIN_WALLETS = (process.env.ADMIN_WALLETS || '').split(',').map(a => a.trim().toLowerCase()).filter(Boolean);

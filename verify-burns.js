@@ -6,7 +6,7 @@ const { ethers } = require('ethers');
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const CONTRACT = '0x015061aa806b5abab9ee453e366e18a713e8ea80';
+const CONTRACT = process.env.CONTRACT_ADDRESS;
 const RPC = 'https://megaeth.drpc.org';
 
 const provider = new ethers.JsonRpcProvider(RPC, undefined, {

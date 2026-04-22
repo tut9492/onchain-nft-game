@@ -6,7 +6,7 @@
 require('dotenv').config({ path: '/home/ubuntu/.openclaw/.env' });
 const { ethers } = require('ethers');
 
-const CONTRACT = '0x015061aa806b5abab9ee453e366e18a713e8ea80';
+const CONTRACT = process.env.CONTRACT_ADDRESS;
 const RPC = 'https://mainnet.megaeth.com/rpc';
 const SIGNER_KEY = process.env.SIGNER_PRIVATE_KEY;
 const DRY_RUN = process.argv.includes('--dry-run');

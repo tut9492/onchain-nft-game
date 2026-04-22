@@ -13,7 +13,7 @@ const { ethers } = require('ethers');
 const fs = require('fs');
 const path = require('path');
 
-const CONTRACT = process.env.CONTRACT_ADDRESS || '0x015061aa806b5abab9ee453e366e18a713e8ea80';
+const CONTRACT = process.env.CONTRACT_ADDRESS;
 const RPC = process.env.WRITE_RPC || 'https://mainnet.megaeth.com/rpc';
 const SIGNER_ADDR = process.env.SIGNER_ADDRESS;
 const TREASURY_ADDR = process.env.TREASURY_ADDRESS;

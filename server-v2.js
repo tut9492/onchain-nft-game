@@ -26,7 +26,7 @@ const fs = require('fs');
 // ─── Config ─────────────────────────────────────────────────────────────────
 
 const PORT = process.env.GAME_PORT || 3001;
-const CONTRACT = '0x015061aa806b5abab9ee453e366e18a713e8ea80';
+const CONTRACT = process.env.CONTRACT_ADDRESS;
 const WRITE_RPC = 'https://mainnet.megaeth.com/rpc';
 const READ_RPC = 'https://megaeth.drpc.org';
 const SIGNER_KEY = process.env.SIGNER_PRIVATE_KEY;
