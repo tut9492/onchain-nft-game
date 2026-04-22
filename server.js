@@ -21,12 +21,12 @@ const fs = require('fs');
 const PORT = process.env.GAME_PORT || 3001;
 const CONTRACT = '0x015061aa806b5abab9ee453e366e18a713e8ea80';
 const RPC = 'https://mainnet.megaeth.com/rpc';
-const SIGNER_KEY = process.env.BREADIO_PRIVATE_KEY;
+const SIGNER_KEY = process.env.SIGNER_PRIVATE_KEY;
 const ADMIN_WALLETS = (process.env.ADMIN_WALLETS || '').split(',').map(a => a.trim().toLowerCase()).filter(Boolean);
 const adminTokens = new Set(); // active admin session tokens
 
 if (!SIGNER_KEY) {
-  console.error('BREADIO_PRIVATE_KEY not set');
+  console.error('SIGNER_PRIVATE_KEY not set');
   process.exit(1);
 }
 

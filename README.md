@@ -52,7 +52,7 @@ EVM Chain (ERC-721 contract)
 
 ```bash
 # Required
-BREADIO_PRIVATE_KEY=your_signer_private_key
+SIGNER_PRIVATE_KEY=your_signer_private_key
 SIGNER_ADDRESS=0x...your_signer_wallet
 TREASURY_ADDRESS=0x...wallet_holding_burn_tokens
 CONTRACT_ADDRESS=0x...your_erc721_contract
