@@ -7,10 +7,10 @@ const Database = require('better-sqlite3');
 const path = require('path');
 
 const CONTRACT = process.env.CONTRACT_ADDRESS;
-const RPC = 'https://megaeth.drpc.org';
+const RPC = process.env.READ_RPC;
 
 const provider = new ethers.JsonRpcProvider(RPC, undefined, {
-  staticNetwork: ethers.Network.from(4326),
+  staticNetwork: ethers.Network.from(parseInt(process.env.CHAIN_ID)),
 });
 
 const db = new Database(path.join(__dirname, 'game.db'));

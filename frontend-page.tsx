@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-const GAME_SERVER = process.env.NEXT_PUBLIC_GAME_SERVER || 'wss://breadiogame.tuthopium.store';
-const GAME_API = process.env.NEXT_PUBLIC_GAME_API || 'https://breadiogame.tuthopium.store';
+const GAME_SERVER = process.env.NEXT_PUBLIC_GAME_SERVER || 'wss://your-game-server.com';
+const GAME_API = process.env.NEXT_PUBLIC_GAME_API || 'https://your-game-server.com';
 const ADMIN_WALLETS = (process.env.NEXT_PUBLIC_ADMIN_WALLETS || '').split(',').map(a => a.trim().toLowerCase()).filter(Boolean);
 
 // ─── Typewriter text component with beep sound ─────────────────────────────
@@ -68,7 +68,7 @@ function LandingDialogue({ phase, ownsNFT, username, setUsername, onConnect, onJ
 
   const messages = phase === 'connect'
     ? [
-        "I HAVE A LOT OF BREAD TO BURN, PLEASE HELP ME. IF YOU FIND SPECIAL BREAD YOU CAN KEEP IT. GAS ON ME. BREADIO",
+        "FLIP CARDS TO FIND RARE NFTS. IF YOU FIND ONE, IT IS YOURS. GAS IS ON US.",
         "CONNECT YOUR WALLET TO PLAY.",
       ]
     : phase === 'verified' && ownsNFT
@@ -94,7 +94,7 @@ function LandingDialogue({ phase, ownsNFT, username, setUsername, onConnect, onJ
       <div style={{
         position: 'relative', width: '100%', maxWidth: '700px',
       }}>
-        <img src="/breadio-landing.png" alt="Breadio" style={{
+        <img src="/landing.png" alt="Game" style={{
           width: '100%', imageRendering: 'pixelated', borderRadius: '8px',
         }} />
 
@@ -808,7 +808,7 @@ export default function ToastOrFineBooty() {
         ))}
       </div>
 
-      {/* Landing / Connect / Username — Breadio dialogue */}
+      {/* Landing / Connect / Username — Landing dialogue */}
       {(gamePhase === 'connect' || gamePhase === 'verified' || gamePhase === 'username') && (
         <LandingDialogue
           phase={gamePhase}
@@ -865,7 +865,7 @@ export default function ToastOrFineBooty() {
                       boxShadow: canJoin ? '3px 3px 0 #8B4513' : 'none',
                     }}
                   >
-                    {!hasWallet ? 'CONNECT FIRST' : !canJoin ? 'NEED BREADIO' : isFull ? 'JOIN LOBBY' : 'ENTER'}
+                    {!hasWallet ? 'CONNECT FIRST' : !canJoin ? 'NEED NFT' : isFull ? 'JOIN LOBBY' : 'ENTER'}
                   </button>
                 </div>
               );

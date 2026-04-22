@@ -9,7 +9,7 @@
 const { ethers } = require('ethers');
 
 const CONTRACT = process.env.CONTRACT_ADDRESS;
-const RPC = process.env.WRITE_RPC || 'https://mainnet.megaeth.com/rpc';
+const RPC = process.env.WRITE_RPC;
 const SIGNER = (process.env.SIGNER_ADDRESS || '').toLowerCase();
 const TREASURY = (process.env.TREASURY_ADDRESS || '').toLowerCase();
 

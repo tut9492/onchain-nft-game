@@ -1,12 +1,12 @@
 /**
  * Toast or Fine Booty — Game Server
  *
- * SMB3-style card flip game. Players flip Breadio NFT cards.
+ * SMB3-style card flip game. Players flip NFT cards.
  * Bad cards get burned on-chain. Good cards get transferred to the player.
  * Real-time multiplayer via WebSocket.
  */
 
-require('dotenv').config({ path: '/home/ubuntu/.openclaw/.env' });
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
@@ -20,7 +20,7 @@ const fs = require('fs');
 
 const PORT = process.env.GAME_PORT || 3001;
 const CONTRACT = process.env.CONTRACT_ADDRESS;
-const RPC = 'https://mainnet.megaeth.com/rpc';
+const RPC = process.env.WRITE_RPC;
 const SIGNER_KEY = process.env.SIGNER_PRIVATE_KEY;
 const ADMIN_WALLETS = (process.env.ADMIN_WALLETS || '').split(',').map(a => a.trim().toLowerCase()).filter(Boolean);
 const adminTokens = new Set(); // active admin session tokens
@@ -36,7 +36,7 @@ if (!SIGNER_KEY) {
 const https = require('https');
 const keepAliveAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
 const httpProvider = new ethers.JsonRpcProvider(RPC, undefined, {
-  staticNetwork: ethers.Network.from(4326),
+  staticNetwork: ethers.Network.from(parseInt(process.env.CHAIN_ID)),
   batchMaxCount: 1,
 });
 // Patch fetch options to use keep-alive agent
@@ -62,7 +62,7 @@ async function warmUpRpc() {
   } catch {}
 }
 
-// Send raw signed tx using MegaETH's sync method for instant receipt
+// Send raw signed tx using EVM sync method for instant receipt
 async function sendRawSync(signedTx) {
   try {
     const res = await fetch(RPC, {
@@ -233,7 +233,7 @@ app.get('/api/game/state', (req, res) => {
   });
 });
 
-// Verify ownership of Breadio NFT
+// Verify ownership of NFT
 app.post('/api/game/verify', async (req, res) => {
   const { address } = req.body;
   if (!address) return res.status(400).json({ error: 'Address required' });
@@ -553,7 +553,7 @@ wss.on('connection', (ws) => {
 
         // Holders only
         if (!isHolder && !ADMIN_WALLETS.includes(playerAddress)) {
-          ws.send(JSON.stringify({ type: 'error', message: 'YOU NEED BREADIO TO PLAY' }));
+          ws.send(JSON.stringify({ type: 'error', message: 'HOLDER ACCESS ONLY' }));
           return;
         }
 
@@ -766,14 +766,14 @@ wss.on('connection', (ws) => {
               data: txData,
               gasLimit: 200000,
               nonce,
-              chainId: 4326,
+              chainId: parseInt(process.env.CHAIN_ID),
               maxFeePerGas: ethers.parseUnits('0.001', 'gwei'),
               maxPriorityFeePerGas: 0,
               type: 2,
             };
             const signedTx = await wallet.signTransaction(txReq);
 
-            // Try MegaETH sync method first (instant receipt)
+            // Try EVM sync method first (instant receipt)
             const receipt = await sendRawSync(signedTx);
             if (receipt && receipt.transactionHash) {
               const txHash = receipt.transactionHash;

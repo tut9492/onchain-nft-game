@@ -1,20 +1,20 @@
 /**
  * Setup script — scans BOTH wallets across ALL token IDs.
- * Breadio wallet = prizes. Main wallet (burn-eligible) = burns.
+ * Signer wallet = prizes. Main wallet (burn-eligible) = burns.
  *
  * Run once before starting the game server.
  */
 
-require('dotenv').config({ path: '/home/ubuntu/.openclaw/.env' });
+require('dotenv').config();
 const { ethers } = require('ethers');
 const fs = require('fs');
 
 const CONTRACT = process.env.CONTRACT_ADDRESS;
-const RPC = process.env.WRITE_RPC || 'https://mainnet.megaeth.com/rpc';
-const BREADIO_WALLET = (process.env.SIGNER_ADDRESS || '').toLowerCase();
+const RPC = process.env.WRITE_RPC;
+const SIGNER_WALLET = (process.env.SIGNER_ADDRESS || '').toLowerCase();
 const MAIN_WALLET = (process.env.TREASURY_ADDRESS || '').toLowerCase();
 
-if (!BREADIO_WALLET || !MAIN_WALLET) { console.error('Set SIGNER_ADDRESS and TREASURY_ADDRESS env vars'); process.exit(1); }
+if (!SIGNER_WALLET || !MAIN_WALLET) { console.error('Set SIGNER_ADDRESS and TREASURY_ADDRESS env vars'); process.exit(1); }
 const TOTAL_SUPPLY = 6969;
 
 // IDs to exclude from the game entirely (rare saves staying in main wallet)
@@ -45,7 +45,7 @@ async function scanBatch(contract, start, end) {
   const responses = await Promise.all(calls);
   for (const r of responses) {
     if (!r) continue;
-    if (r.owner === BREADIO_WALLET) {
+    if (r.owner === SIGNER_WALLET) {
       results.prizes.push(r.id);
     } else if (r.owner === MAIN_WALLET && !EXCLUDE_FROM_BURN.has(r.id)) {
       results.burns.push(r.id);
@@ -61,9 +61,9 @@ async function main() {
     'function balanceOf(address) view returns (uint256)',
   ], provider);
 
-  const breadioBalance = await contract.balanceOf(BREADIO_WALLET);
+  const signerBalance = await contract.balanceOf(SIGNER_WALLET);
   const mainBalance = await contract.balanceOf(MAIN_WALLET);
-  console.log(`Breadio wallet: ${breadioBalance} NFTs (prizes)`);
+  console.log(`Signer wallet: ${signerBalance} NFTs (prizes)`);
   console.log(`Main wallet: ${mainBalance} NFTs`);
 
   const allPrizes = [];
@@ -84,7 +84,7 @@ async function main() {
   }
 
   // If we didn't find all prizes, retry missing ones
-  const target = Number(breadioBalance);
+  const target = Number(signerBalance);
   if (allPrizes.length < target) {
     console.log(`\nFound ${allPrizes.length}/${target} prizes. Retrying...`);
     const found = new Set(allPrizes);
@@ -92,7 +92,7 @@ async function main() {
       if (found.has(id)) continue;
       try {
         const owner = await contract.ownerOf(id);
-        if (owner.toLowerCase() === BREADIO_WALLET) {
+        if (owner.toLowerCase() === SIGNER_WALLET) {
           allPrizes.push(id);
           found.add(id);
           if (allPrizes.length >= target) break;
@@ -103,7 +103,7 @@ async function main() {
   }
 
   console.log(`\nResults:`);
-  console.log(`  Prizes (Breadio wallet): ${allPrizes.length}`);
+  console.log(`  Prizes (Signer wallet): ${allPrizes.length}`);
   console.log(`  Burns (Main wallet, game-eligible): ${allBurns.length}`);
   console.log(`  Excluded (rare saves): ${EXCLUDE_FROM_BURN.size}`);
   console.log(`  Total game cards: ${allPrizes.length + allBurns.length}`);

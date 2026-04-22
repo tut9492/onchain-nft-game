@@ -1,7 +1,7 @@
 {
   "name": "toast-or-fine-booty",
   "version": "1.0.0",
-  "description": "SMB3-style card flip burn game for Breadio NFTs",
+  "description": "Real-time multiplayer NFT card flip game",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

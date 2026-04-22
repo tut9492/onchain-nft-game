@@ -3,18 +3,18 @@
  * Skips addresses that already received tokens on-chain.
  */
 
-require('dotenv').config({ path: '/home/ubuntu/.openclaw/.env' });
+require('dotenv').config();
 const { ethers } = require('ethers');
 
 const CONTRACT = process.env.CONTRACT_ADDRESS;
-const RPC = 'https://mainnet.megaeth.com/rpc';
+const RPC = process.env.WRITE_RPC;
 const SIGNER_KEY = process.env.SIGNER_PRIVATE_KEY;
 const DRY_RUN = process.argv.includes('--dry-run');
 
 if (!SIGNER_KEY) { console.error('SIGNER_PRIVATE_KEY not set'); process.exit(1); }
 
 const provider = new ethers.JsonRpcProvider(RPC, undefined, {
-  staticNetwork: ethers.Network.from(4326),
+  staticNetwork: ethers.Network.from(parseInt(process.env.CHAIN_ID)),
 });
 const wallet = new ethers.Wallet(SIGNER_KEY, provider);
 const contract = new ethers.Contract(CONTRACT, [

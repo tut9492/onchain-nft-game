@@ -2,7 +2,7 @@
  * Toast or Fine Booty — Game Server v2
  *
  * Multi-room architecture:
- * - Breadio Room: holders only, 5s cooldown, 2 wins max
+ * - Holder Room: holders only, 5s cooldown, 2 wins max
  * - Public Room: anyone, 30s cooldown, 1 win max
  *
  * Fixes from v1:
@@ -13,7 +13,7 @@
  * - 30 min verify cache
  */
 
-require('dotenv').config({ path: '/home/ubuntu/.openclaw/.env' });
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
@@ -27,8 +27,8 @@ const fs = require('fs');
 
 const PORT = process.env.GAME_PORT || 3001;
 const CONTRACT = process.env.CONTRACT_ADDRESS;
-const WRITE_RPC = 'https://mainnet.megaeth.com/rpc';
-const READ_RPC = 'https://megaeth.drpc.org';
+const WRITE_RPC = process.env.WRITE_RPC;
+const READ_RPC = process.env.READ_RPC;
 const SIGNER_KEY = process.env.SIGNER_PRIVATE_KEY;
 const ADMIN_WALLETS = (process.env.ADMIN_WALLETS || '').split(',').map(a => a.trim().toLowerCase()).filter(Boolean);
 const adminTokens = new Set();
@@ -38,10 +38,10 @@ if (!SIGNER_KEY) { console.error('SIGNER_PRIVATE_KEY not set'); process.exit(1);
 // ─── Blockchain Setup ───────────────────────────────────────────────────────
 
 const writeProvider = new ethers.JsonRpcProvider(WRITE_RPC, undefined, {
-  staticNetwork: ethers.Network.from(4326),
+  staticNetwork: ethers.Network.from(parseInt(process.env.CHAIN_ID)),
 });
 const readProvider = new ethers.JsonRpcProvider(READ_RPC, undefined, {
-  staticNetwork: ethers.Network.from(4326),
+  staticNetwork: ethers.Network.from(parseInt(process.env.CHAIN_ID)),
 });
 const wallet = new ethers.Wallet(SIGNER_KEY, writeProvider);
 const ABI = [
@@ -148,8 +148,8 @@ const WHITELIST = new Set(
 // ─── Room System ────────────────────────────────────────────────────────────
 
 const ROOM_CONFIG = {
-  breadio: {
-    name: 'BREADIO ROOM 1',
+  holder1: {
+    name: 'HOLDER ROOM 1',
     requiresHolding: true,
     cooldown: 5000,
     maxWins: 2,
@@ -157,8 +157,8 @@ const ROOM_CONFIG = {
     maxPrizes: 5,
 
   },
-  breadio2: {
-    name: 'BREADIO ROOM 2',
+  holder2: {
+    name: 'HOLDER ROOM 2',
     requiresHolding: true,
     cooldown: 5000,
     maxWins: 2,
@@ -166,8 +166,8 @@ const ROOM_CONFIG = {
     maxPrizes: 5,
 
   },
-  breadio3: {
-    name: 'BREADIO ROOM 3',
+  holder3: {
+    name: 'HOLDER ROOM 3',
     requiresHolding: true,
     cooldown: 5000,
     maxWins: 2,
@@ -176,7 +176,7 @@ const ROOM_CONFIG = {
 
   },
   test: {
-    name: 'BREADIO ROOM 4',
+    name: 'HOLDER ROOM 4',
     requiresHolding: true,
     cooldown: 5000,
     maxWins: 2,
@@ -288,7 +288,7 @@ async function checkHolder(address) {
 
 const app = express();
 app.use(cors({
-  origin: ['https://tuthouse.vercel.app', 'https://tut.house', 'https://www.tut.house', 'http://localhost:3000'],
+  origin: ['https://your-frontend.vercel.app', 'https://your-domain.com', 'https://www.your-domain.com', 'http://localhost:3000'],
   credentials: true,
 }));
 app.use(express.json());
@@ -427,7 +427,7 @@ function endRound(roomId) {
 // Admin actions take a room parameter
 app.post('/api/game/admin/start', (req, res) => {
   if (!requireAdmin(req, res)) return;
-  const roomId = req.body?.room || req.query?.room || 'breadio';
+  const roomId = req.body?.room || req.query?.room || 'holder1';
   const room = rooms[roomId];
   if (!room) return res.status(404).json({ error: 'Room not found' });
   room.paused = false;
@@ -441,7 +441,7 @@ app.post('/api/game/admin/start', (req, res) => {
 
 app.post('/api/game/admin/pause', (req, res) => {
   if (!requireAdmin(req, res)) return;
-  const roomId = req.body?.room || req.query?.room || 'breadio';
+  const roomId = req.body?.room || req.query?.room || 'holder1';
   const room = rooms[roomId];
   if (!room) return res.status(404).json({ error: 'Room not found' });
   room.paused = true;
@@ -502,7 +502,7 @@ app.post('/api/game/admin/kick', (req, res) => {
   if (!requireAdmin(req, res)) return;
   const { address, room: roomId } = req.body;
   if (!address) return res.status(400).json({ error: 'Address required' });
-  const rId = roomId || 'breadio';
+  const rId = roomId || 'holder1';
   const room = rooms[rId];
   if (!room) return res.status(404).json({ error: 'Room not found' });
   const addr = address.toLowerCase();
@@ -523,7 +523,7 @@ app.post('/api/game/admin/kick', (req, res) => {
 
 // Leaderboard
 app.get('/api/game/leaderboard', (req, res) => {
-  const roomId = req.query.room || 'breadio';
+  const roomId = req.query.room || 'holder1';
   const leaders = db.prepare('SELECT address, username, wins, burns FROM players WHERE room = ? ORDER BY wins DESC LIMIT 20').all(roomId);
   res.json(leaders.map(l => ({
     ...l, address: l.address.slice(0, 6) + '...' + l.address.slice(-4),
@@ -627,12 +627,12 @@ wss.on('connection', (ws) => {
         const isAdmin = ADMIN_WALLETS.includes(playerAddress);
 
         // Use room from client, validate access
-        const roomId = msg.room || 'breadio';
+        const roomId = msg.room || 'holder1';
         if (!rooms[roomId]) { ws.send(JSON.stringify({ type: 'error', message: 'Room not found' })); return; }
 
         // Check holder requirement
         if (rooms[roomId].config.requiresHolding && !isHolder && !isAdmin) {
-          ws.send(JSON.stringify({ type: 'error', message: 'YOU NEED BREADIO FOR THIS ROOM' })); return;
+          ws.send(JSON.stringify({ type: 'error', message: 'HOLDER ACCESS ONLY' })); return;
         }
 
         // Check whitelist requirement
@@ -801,7 +801,7 @@ wss.on('connection', (ws) => {
 
               const txReq = {
                 to: CONTRACT, data: txData, gasLimit: 200000, nonce,
-                chainId: 4326, maxFeePerGas: ethers.parseUnits('0.001', 'gwei'),
+                chainId: parseInt(process.env.CHAIN_ID), maxFeePerGas: ethers.parseUnits('0.001', 'gwei'),
                 maxPriorityFeePerGas: 0, type: 2,
               };
               const signedTx = await wallet.signTransaction(txReq);
@@ -849,7 +849,7 @@ wss.on('connection', (ws) => {
 
               const txReq = {
                 to: CONTRACT, data: txData, gasLimit: 200000, nonce: nonceBurn,
-                chainId: 4326, maxFeePerGas: ethers.parseUnits('0.001', 'gwei'),
+                chainId: parseInt(process.env.CHAIN_ID), maxFeePerGas: ethers.parseUnits('0.001', 'gwei'),
                 maxPriorityFeePerGas: 0, type: 2,
               };
               const signedTx = await wallet.signTransaction(txReq);

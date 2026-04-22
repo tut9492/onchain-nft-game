@@ -4,28 +4,28 @@
  * Real burns = treasury token IDs (burned on-chain by signer)
  * Fake burns = fake IDs (game-state only, no chain tx)
  *
- * Usage: node rebuild-rooms.js [breadioPrizes] [publicPrizes] [realBurns] [cardsPerRoom]
+ * Usage: node rebuild-rooms.js [holderPrizes] [publicPrizes] [realBurns] [cardsPerRoom]
  * Default: 5 prizes per room, 5 burns per room, 150 cards per room
  */
 
-require('dotenv').config({ path: '/home/ubuntu/.openclaw/.env' });
+require('dotenv').config();
 const { ethers } = require('ethers');
 const fs = require('fs');
 const path = require('path');
 
 const CONTRACT = process.env.CONTRACT_ADDRESS;
-const RPC = process.env.WRITE_RPC || 'https://mainnet.megaeth.com/rpc';
+const RPC = process.env.WRITE_RPC;
 const SIGNER_ADDR = process.env.SIGNER_ADDRESS;
 const TREASURY_ADDR = process.env.TREASURY_ADDRESS;
 
 if (!SIGNER_ADDR || !TREASURY_ADDR) { console.error('Set SIGNER_ADDRESS and TREASURY_ADDRESS env vars'); process.exit(1); }
 
-const BREADIO_PRIZES = parseInt(process.argv[2]) || 5;
+const HOLDER_PRIZES = parseInt(process.argv[2]) || 5;
 const PUBLIC_PRIZES = parseInt(process.argv[3]) || 5;
 const TOTAL_REAL_BURNS = parseInt(process.argv[4]) || 0;
 const CARDS_PER_ROOM = parseInt(process.argv[5]) || 150;
 
-const provider = new ethers.JsonRpcProvider(RPC, undefined, { staticNetwork: ethers.Network.from(4326) });
+const provider = new ethers.JsonRpcProvider(RPC, undefined, { staticNetwork: ethers.Network.from(parseInt(process.env.CHAIN_ID)) });
 
 async function getHoldings(address) {
   var iface = new ethers.Interface(['event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)']);
@@ -56,7 +56,7 @@ function shuffle(arr) {
 }
 
 async function scan() {
-  var totalPrizes = BREADIO_PRIZES * 2 + PUBLIC_PRIZES * 2;
+  var totalPrizes = HOLDER_PRIZES * 2 + PUBLIC_PRIZES * 2;
 
   console.log('Finding tokens via Transfer events...\n');
 
@@ -105,8 +105,8 @@ async function scan() {
   var prizeIdx = 0;
   var burnIdx = 0;
   var roomConfigs = [
-    { name: 'breadio', prizes: BREADIO_PRIZES },
-    { name: 'breadio2', prizes: BREADIO_PRIZES },
+    { name: 'holder1', prizes: HOLDER_PRIZES },
+    { name: 'holder2', prizes: HOLDER_PRIZES },
     { name: 'public', prizes: PUBLIC_PRIZES },
     { name: 'public2', prizes: PUBLIC_PRIZES },
   ];

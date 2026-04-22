@@ -2,7 +2,7 @@
 
 A real-time multiplayer NFT card flip game. Players flip cards to find rare NFTs — winners get real tokens transferred on-chain, and burns destroy tokens permanently.
 
-Built live on stream with 1,000+ viewers on MegaETH.
+Built live on stream with 1,000+ viewers with any EVM chain.
 
 ## How It Works
 
@@ -115,7 +115,7 @@ Admin wallets see an ADMIN button. Sign to authenticate, then start/pause/kick p
 curl -X POST http://localhost:3001/api/game/admin/startall
 
 # Start single room
-curl -X POST "http://localhost:3001/api/game/admin/start?room=breadio"
+curl -X POST "http://localhost:3001/api/game/admin/start?room=holder1"
 
 # Pause all
 curl -X POST http://localhost:3001/api/game/admin/pauseall
@@ -148,4 +148,4 @@ MIT
 
 ## Credits
 
-Built by [@Tuteth_](https://x.com/Tuteth_)
+Built with open source.
